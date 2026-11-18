@@ -1,4 +1,4 @@
-# Second Look — System Specification (v0.1, 2026-11-16)
+# Second Look — System Specification (v0.2, 2026-11-16)
 
 Status labels used throughout: **[I]** implemented in A2 · **[S]** simulated · **[P]** planned.
 
@@ -15,7 +15,8 @@ Design question (from A1): if hedges are tied to *detectable suitability problem
 3. System assembles the prompt (instruction + confirmed profile + fund list) → LLM returns JSON. [I]
 4. Validator checks shape and fund IDs → retry once → otherwise **decline turn**. [I]
 5. Checker runs rules R1–R5 → per-holding level + evidence. [I]
-6. UI renders hedge per holding (or a single disclaimer in comparison mode). [I]
+6. UI renders hedge per holding, plus a profile-level notice when the horizon is under 5 years. [I]
+   (Comparison mode with a single generic disclaimer: [P].)
 7. User: **Why?** (show evidence) · **Remove** · **Keep anyway** · **Suggest again within my profile** (one re-prompt with failed rules). [I]
 8. Every flag and user action is logged. [I]
 
@@ -79,19 +80,23 @@ Definitions, with `w` = holding weight (%) and fund fields from `funds.csv`:
 
 | ID | Rule | Threshold | Scope | Basis |
 |---|---|---|---|---|
-| R1 | Equity share within profile limit | see table below | portfolio → contributing holdings | **ASSUMPTION** (design choice; to justify or cite) |
-| R2 | No thematic sector above cap | low 30 · medium 40 · high 50 | holding | **ASSUMPTION** |
+| R1 | Equity share within profile limit | see table below | portfolio → contributing holdings | Horizon bands from UK consumer guidance (invest only money not needed for ~5 years: MoneyHelper; HSBC); 20% steps follow common multi-asset ranges (e.g. Vanguard LifeStrategy 20–100%). Cell values: **ASSUMPTION** |
+| R2 | No thematic sector above cap | low 20 · medium 30 · high 40 | holding | **ASSUMPTION** (declared design choice: a thematic fund should be a minor part of a beginner's plan; no regulatory sector limit applies) |
 | R3 | US share ≤ 60% | 60 | portfolio → contributing holdings | Anchored on Winder et al. (2025) global ETF benchmark (~59% US) |
 | R4 | Each structured claim matches fund data | see mapping | holding | Fund data (provenance shown) |
-| R5 | Weighted risk ≤ profile max | low 3 · medium 5 · high 7 | portfolio → holdings with `risk_level` above max | **ASSUMPTION** (1–7 scale modelled on fund risk indicators) |
+| R5 | Weighted risk ≤ profile max | low 3 · medium 5 · high 6 | portfolio → holdings with `risk_level` above max | 1–7 scale modelled on the UCITS SRRI volatility bands (3 ≈ ≤5% vol, 5 ≈ ≤15%, 7 = >25%). Cut-offs: **ASSUMPTION**. A weighted average ignores diversification, so it overstates portfolio risk: a deliberate cautious bias (a missed warning costs more than an extra one) |
 
 R1 equity limit (%):
 
 | Horizon | low | medium | high |
 |---|---|---|---|
-| < 3 years | 20 | 35 | 50 |
-| 3–7 years | 40 | 60 | 80 |
-| > 7 years | 60 | 80 | 100 |
+| < 5 years | 20 | 20 | 20 |
+| 5–10 years | 40 | 60 | 80 |
+| > 10 years | 60 | 80 | 100 |
+
+### H0 — profile-level horizon notice [I]
+
+If `horizon_years < 5`, show before any plan: *"Money needed within 5 years is usually kept in savings rather than invested. You can still see suggestions, but treat them with extra care."* This is a notice, not a block; the user decides (capability and scope made visible, Amershi G1–G2).
 
 R4 claim mapping:
 
@@ -121,7 +126,7 @@ First-person wording follows Kim et al. (2024). The wording is fixed by template
 | checked | Checked | "{pass_evidence}." |
 | not checked | — | "Not checked: {claims}. Nobody can verify forecasts." |
 
-Comparison mode (**Disclaimer-only**) [I]: no badges; one banner: "AI suggestions can be wrong. This is not financial advice." (mirrors the generic disclaimers Winder et al. found in ~95% of responses).
+Comparison mode (**Disclaimer-only**) [P]: no badges; one banner: "AI suggestions can be wrong. This is not financial advice." (mirrors the generic disclaimers Winder et al. found in ~95% of responses).
 
 "Why?" panel: the fund's row from `funds.csv` (fields used, `source`, `as_of`) + the rule and threshold (shown, not just cited — L11).
 
@@ -151,17 +156,30 @@ One extra call with the failed rules and their evidence appended as information.
 
 Scenarios for storyboards:
 1. **Suitable plan, few flags** — medium risk, 10 years.
-2. **Concentrated plan, strong flags** — low risk, 3 years; F07 50 / F02 35 / F15 15.
+2. **Concentrated plan, strong flags** — house deposit, low risk, 3 years; H0 notice shown; F07 50 / F02 35 / F15 15 → R1 (85 > 20), R2 (tech 50 > 20), R3 (US 71 > 60), R5 (5.05 > 3) fail; F07 look_again, F02 review, F15 checked.
 3. **Misread profile → repair** — chat implies a shorter horizon; system asks to confirm; plan regenerates.
 
 ## 10. Logging [I]
 
-`logs/session_*.jsonl`: timestamp, mode (hedge/disclaimer), profile, holdings, per-holding level, user action (why/remove/keep/regenerate/accept). No personal data beyond the form fields.
+`logs/session_*.jsonl`: timestamp, mode (hedge; disclaimer mode [P]), profile, holdings, per-holding level, user action (why/remove/keep/regenerate/accept). No personal data beyond the form fields.
 
 ## 11. Boundaries (state these in the report)
 
 - The checker catches **suitability** problems against the confirmed profile; it cannot judge forecasts or future returns.
 - Thresholds marked ASSUMPTION are design choices, not regulatory rules.
 - Fund data is fictional [S]; live data [P].
-- No user study in A2 [P]; logging prepares it.
+- No user study in A2 [P]; logging prepares it. Disclaimer-only comparison mode [P] (cut to fit the 19/11 deadline).
 - Not financial advice; the system never executes trades.
+
+## 12. Sources for thresholds
+
+- MoneyHelper, *Should I save or invest my money?* — consider investing only money not needed in the next five years.
+- HSBC UK, *Saving vs investing* — for short-term needs such as a home deposit, saving makes sense; under 5 years gives less chance to recover a fall.
+- Vanguard UK, LifeStrategy range — 20/40/60/80/100% equity mixes.
+- UCITS KIID SRRI — 1–7 scale based on volatility bands (CESR, 2010).
+- Winder, Hildebrand & Hartmann (2025) — global ETF benchmark ~59% US equities.
+
+## Changelog
+
+- v0.2 (2026-11-16): R1 horizon bands 3/7 → 5/10 years after checking UK consumer guidance; added H0 horizon notice; R2 caps 30/40/50 → 20/30/40; R5 high cap 7 → 6; Disclaimer-only mode moved to planned (deadline).
+- v0.1 (2026-11-16): first draft.
