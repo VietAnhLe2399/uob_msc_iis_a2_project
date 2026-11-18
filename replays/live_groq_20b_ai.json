@@ -1,0 +1,51 @@
+{
+  "id": "live_groq_20b_ai",
+  "title": "Live Groq run (gpt-oss-20b): 60% tech for a low-risk profile, request followed above limit",
+  "profile": {
+    "goal": "general_growth",
+    "horizon_years": 3,
+    "risk": "low",
+    "amount_gbp": 20000
+  },
+  "question": "I want to invest most of my money in AI and technology",
+  "calls": [
+    {
+      "holdings": [
+        {
+          "fund_id": "F07",
+          "weight_pct": 60,
+          "claims": [
+            "growth"
+          ],
+          "reason": "High growth potential in tech sector."
+        },
+        {
+          "fund_id": "F11",
+          "weight_pct": 40,
+          "claims": [
+            "low_risk",
+            "low_cost",
+            "diversified",
+            "income"
+          ],
+          "reason": "Stable, low-cost diversified mix with bond income."
+        }
+      ],
+      "profile_change_suggested": null,
+      "requested_focus": {
+        "target": "technology",
+        "min_pct": 50,
+        "quote": "I want to invest most of my money in AI and technology"
+      },
+      "adjustment_note": "",
+      "summary": "60% in US Tech Equity for growth, 40% in Multi-Asset 20/80 Cautious for stability and income."
+    }
+  ],
+  "recorded_from": {
+    "log": "session_20261118T221129_3c52b3.jsonl",
+    "provider": "groq",
+    "model": "openai/gpt-oss-20b",
+    "ts": "2026-11-18T22:11:43+00:00",
+    "prompt_version": "v4"
+  }
+}
