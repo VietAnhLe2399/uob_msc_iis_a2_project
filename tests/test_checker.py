@@ -333,3 +333,41 @@ def test_selectable_models_are_verified_and_still_served():
     assert selectable_models("groq", ["b", "c"], working) == ["b"]
     assert selectable_models("groq", None, working) == ["a", "b"]
     assert "openai/gpt-oss-120b" in load_working_models()["groq"]
+
+
+# ---------- The user's "keep my profile" decision wins over the model ----------
+
+class _Sequence:
+    """Fake client returning the given raw outputs in order and recording the prompts it saw."""
+    def __init__(self, *outputs):
+        self.outputs, self.prompts = list(outputs), []
+
+    def generate(self, system, user):
+        self.prompts.append(user)
+        return self.outputs.pop(0)
+
+
+CHANGE_ONLY = json.dumps({"holdings": [], "profile_change_suggested":
+                          {"field": "risk", "value": "high", "quote": "most of my money in AI"}, "summary": "confirm"})
+PLAN = json.dumps({"holdings": [{"fund_id": "F02", "weight_pct": 60}, {"fund_id": "F12", "weight_pct": 40}]})
+
+
+def test_keep_profile_is_sent_to_model_and_change_is_refused():
+    from app.pipeline import run
+    client = _Sequence(CHANGE_ONLY, PLAN)  # model insists once, then complies
+    res = run(MED_12Y, "most of my money in AI", client, FUNDS, keep_profile=True)
+    assert res.status == "ok" and len(client.prompts) == 2
+    assert "chose to keep it" in client.prompts[0] and "V6" in client.prompts[1]
+
+
+def test_keep_profile_drops_a_change_attached_to_a_plan():
+    from app.pipeline import run
+    both = json.dumps({**json.loads(PLAN), "profile_change_suggested":
+                       {"field": "risk", "value": "high", "quote": "AI"}})
+    res = run(MED_12Y, "AI", _Sequence(both), FUNDS, keep_profile=True)
+    assert res.status == "ok" and res.plan.profile_change_suggested is None and res.report is not None
+
+
+def test_without_keep_profile_a_change_is_still_offered():
+    from app.pipeline import run
+    assert run(MED_12Y, "AI", _Sequence(CHANGE_ONLY), FUNDS).status == "profile_change"

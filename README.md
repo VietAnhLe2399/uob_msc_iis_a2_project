@@ -1,6 +1,6 @@
 # Second Look
 
-README prose word count: about 1370 (excluding code blocks and commands)
+README prose word count: about 1430 (excluding code blocks and commands)
 
 An investment-suggestion assistant for beginner UK investors. A language model proposes a portfolio from a fixed fund list; **deterministic code** checks every suggestion against the user's confirmed profile; the interface attaches a per-suggestion badge (*Look again* / *Review* / *Checked*) with the evidence beside it. The user decides; nothing is bought or sold. Design question carried from my Assignment 1: if hedges are tied to *detectable* suitability problems instead of the model's own confidence, can users spot unsuitable advice? Full specification and dated changelog: [docs/SPEC.md](docs/SPEC.md).
 
@@ -10,12 +10,12 @@ Status labels: **[I]** implemented · **[S]** simulated · **[P]** planned.
 
 **Implemented [I]**
 - Profile form → "I understood…" confirmation → horizon notice (H0) for money needed within 5 years.
-- LLM call (Groq or Gemini) returning JSON; validator V1–V5 (schema, closed fund list, weights = 100, ≤6 holdings, no duplicates); one retry, then a decline turn.
+- LLM call (Groq or Gemini) returning JSON; validator V1–V6 (schema, closed fund list, weights = 100, ≤6 holdings, no duplicates, no repeated profile change once the user has refused one); one retry, then a decline turn.
 - Checker: R1 share of stocks, R2 one sector, R3 one market, R4 model's claims vs fund data, R5 average risk, R6 the user's explicit request vs the plan.
 - Badges with fixed hedge wording, *Why?* panel with the fund data and rule, *Remove* (plan re-checked, removed share kept as cash), *Keep anyway*, *Undo*, one *Suggest again within my profile*.
 - Model-proposed profile changes shown for the user to confirm (repair turn); model summary labelled "(not checked)".
 - Comparison mode: same plan with one generic disclaimer; checks still run and are logged.
-- Logs of flags and user actions; replay of stored model outputs; batch evaluation; 53 tests.
+- Logs of flags and user actions; replay of stored model outputs; batch evaluation; 58 tests.
 
 **Simulated [S]**
 - Fund data: 16 fictional funds used as controlled test data (known answers for every rule).
@@ -47,7 +47,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env            # LLM_PROVIDER=replay needs no API key
 streamlit run app/streamlit_app.py
-pytest                          # 53 tests
+pytest                          # 58 tests
 ```
 
 - **Without a key:** keep provider `replay` and pick a scenario in the sidebar. `live_groq_v4_ai` shows all three badges from a real run; `scenario_2` walks through remove, undo and *Suggest again*; `scenario_3` shows the profile-repair turn; `scenario_4` shows R6.
@@ -86,7 +86,7 @@ The repository was created on 18 Nov after development on 16–18 Nov. The first
 
 **5. Rule review after live runs.** My first live run showed the model's summary claiming the plan "aligns with your medium risk" above three warnings, so summaries are now labelled "(not checked)". I then asked why *Review* badges had disappeared; a cash fund had been marked "not confident this suits you" only because the model called it "diversified". At my request we reviewed every rule: R4 became a *description* finding (Review, own wording), Review now marks only funds that are themselves over a limit, and R3 checks every market (100% UK shares had passed every rule). *Checked:* a test per case. [06ef8a8](../../commit/06ef8a8)
 
-**6. Prompt changes, measured.** v2 defines claim tags; v3 says interest in a theme is not a profile change (an AI question had produced no plan); v4 asks the model to state the user's explicit request. Batch evaluation (Groq, 20 runs per version, descriptive only): profile-change turns 6/20 (v1) → 0/20 (v4); false claims 15 in 9 of 14 plans → 4 in 4 of 19. Never zero, so the code check stays. [eval/](eval)
+**6. Prompt changes, measured.** v2 defines claim tags; v3 says interest in a theme is not a profile change (an AI question had produced no plan); v4 asks the model to state the user's explicit request. Prompt rules alone were not enough: `gpt-oss-20b` still turned "most of my money in AI" into a risk change, and *Keep my current profile* led back to the same proposal. That button now asks for a plan at once and code (V6) refuses a repeated proposal, so the user's choice wins. Batch evaluation (Groq, 20 runs per version, descriptive only): profile-change turns 6/20 (v1) → 0/20 (v4); false claims 15 in 9 of 14 plans → 4 in 4 of 19. Never zero, so the code check stays. [eval/](eval)
 
 **7. R6 built, not planned.** A live run answered "most of my money into AI" with 20% technology and no explanation. Claude listed this as planned; I asked why it could not be built. R6 now shows the request the model read and the plan's actual share, and warns when a reduction is unexplained. It is not sent back on *Suggest again*, so it cannot push past the sector limit. [06ef8a8](../../commit/06ef8a8)
 

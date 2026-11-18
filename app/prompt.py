@@ -80,8 +80,12 @@ def get_instruction(version: str = None) -> str:
     return INSTRUCTIONS[version or os.getenv("PROMPT_VERSION", DEFAULT_PROMPT_VERSION)]
 
 
+KEEP_PROFILE_NOTE = ("The user was asked whether to change their profile and chose to keep it. "
+                     "Do not propose a profile change. Build a plan for the confirmed profile above.")
+
+
 def build_user_message(profile: Profile, question: str, funds: dict,
-                       failed_rules=None, validator_errors=None) -> str:
+                       failed_rules=None, validator_errors=None, keep_profile=False) -> str:
     parts = [
         "Confirmed profile (JSON):",
         json.dumps(profile.model_dump()),
@@ -91,6 +95,8 @@ def build_user_message(profile: Profile, question: str, funds: dict,
         "",
         f"User message: {question.strip() or 'Please suggest a plan for my profile.'}",
     ]
+    if keep_profile:
+        parts += ["", KEEP_PROFILE_NOTE]
     if failed_rules:
         parts += ["", "The user asked for a new plan within their profile. "
                       "Your previous plan failed these suitability checks:"]

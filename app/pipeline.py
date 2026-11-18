@@ -32,13 +32,16 @@ class Result:
     prompt_version: str = ""
 
 
-def run(profile: Profile, question: str, client, funds: dict, failed_rules=None, prompt_version=None) -> Result:
+def run(profile: Profile, question: str, client, funds: dict, failed_rules=None, prompt_version=None,
+        keep_profile: bool = False) -> Result:
+    """keep_profile=True: the user has refused a proposed profile change, so the model may not propose one again.
+    This is enforced in code, not only asked for in the prompt (smaller models ignored the prompt rule)."""
     version = prompt_version or os.getenv("PROMPT_VERSION", DEFAULT_PROMPT_VERSION)
     result = Result(prompt_version=version)
     instruction = get_instruction(version)
     validator_errors = None
     for _attempt in range(2):  # first call + one retry (V-rules)
-        user = build_user_message(profile, question, funds, failed_rules, validator_errors)
+        user = build_user_message(profile, question, funds, failed_rules, validator_errors, keep_profile)
         try:
             raw = client.generate(instruction, user)
         except Exception as exc:  # network, quota, missing key, or the provider rejecting malformed JSON
@@ -52,6 +55,14 @@ def run(profile: Profile, question: str, client, funds: dict, failed_rules=None,
             break
         result.raw_outputs.append(raw)
         plan, validator_errors = validate(raw, funds)
+        if plan is not None and keep_profile and plan.profile_change_suggested:
+            if plan.holdings:  # the user's decision wins: drop the proposal, keep the plan
+                result.errors.append("V6 model proposed a profile change again; ignored because the user kept the profile")
+                plan = plan.model_copy(update={"profile_change_suggested": None})
+            else:
+                validator_errors = ["V6 the user chose to keep their profile. Do not propose a profile change; "
+                                    "return a plan for the confirmed profile."]
+                plan = None
         if plan is not None:
             result.plan = plan
             if plan.profile_change_suggested:

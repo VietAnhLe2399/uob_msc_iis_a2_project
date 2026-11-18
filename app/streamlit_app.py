@@ -72,7 +72,7 @@ def scenario_defaults():
     return {"goal": "general_growth", "horizon_years": 10, "risk": "medium", "amount_gbp": 10000}, ""
 
 
-def ask_model(failed_rules=None):
+def ask_model(failed_rules=None, keep_profile=False):
     try:
         c = client()
     except Exception as exc:  # missing package or API key: report, don't crash
@@ -80,7 +80,7 @@ def ask_model(failed_rules=None):
                      errors=[f"Couldn't start the '{ss.provider}' model client ({exc.__class__.__name__}: {exc}). "
                              "Check your .env file and installed packages, or switch to 'replay'."])
     else:
-        res = run(ss.profile, ss.question, c, FUNDS, failed_rules)
+        res = run(ss.profile, ss.question, c, FUNDS, failed_rules, keep_profile=keep_profile)
     ss.result, ss.removed, ss.kept, ss.why = res, set(), set(), set()
     ss.log.write("model_result", provider=ss.provider, status=res.status, prompt_version=res.prompt_version,
                  model=getattr(ss.get("client"), "model", ss.provider),
@@ -92,7 +92,8 @@ def ask_model(failed_rules=None):
                                                            "requested_pct": res.request.requested_pct,
                                                            "actual_pct": round(res.request.actual_pct, 1),
                                                            "status": res.request.status},
-                 errors=res.errors, regenerate=bool(failed_rules), raw_outputs=res.raw_outputs,
+                 errors=res.errors, regenerate=bool(failed_rules), keep_profile=keep_profile,
+                 raw_outputs=res.raw_outputs,
                  summary=res.plan.summary if res.plan else "",
                  profile_change=res.plan.profile_change_suggested.model_dump()
                  if res.plan and res.plan.profile_change_suggested else None)
@@ -280,11 +281,16 @@ def request_panel(rr):
         st.markdown(f"You wrote: “{rr.quote}”. I read this as **at least {rr.requested_pct}% in {rr.target}**. "
                     "If that's not what you meant, change your question.")
         st.markdown(f"This plan puts **{rr.actual_pct:.0f}%** in {rr.target}.")
+        kind = "one sector" if rr.target in ("technology", "healthcare", "energy") else "one market"
+        over_cap = rr.profile_cap is not None and rr.actual_pct > rr.profile_cap
         if rr.status == "followed":
-            st.success("The plan gives you what you asked for.")
+            if over_cap:  # following the request is not the same as suiting the profile: no green here
+                st.warning(f"The plan gives you what you asked for, but {rr.actual_pct:.0f}% in {rr.target} is "
+                           f"above the {rr.profile_cap:g}% your profile allows in {kind}. See the flags below.")
+            else:
+                st.success("The plan gives you what you asked for.")
         else:
             if rr.profile_cap is not None and rr.requested_pct > rr.profile_cap:
-                kind = "one sector" if rr.target in ("technology", "healthcare", "energy") else "one market"
                 st.caption(f"Your profile allows up to {rr.profile_cap:g}% in {kind}, so the checks would flag "
                            f"{rr.requested_pct}%.")
             if rr.status == "reduced_explained":
@@ -327,7 +333,8 @@ if ss.stage == "result":
             st.rerun()
         if c2.button("Keep my current profile"):
             ss.log.write("profile_change_rejected", field=ch.field, value=ch.value)
-            ss.stage = "ask"
+            with st.spinner("Building a plan for your current profile…"):
+                ask_model(keep_profile=True)  # the user's choice is passed to the model and enforced in code
             st.rerun()
 
     elif res.status == "model_declined":

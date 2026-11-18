@@ -68,6 +68,7 @@ Implemented as Pydantic models; passed to the provider as a JSON schema where su
 | V3 | Weights sum to 100 (±1) | retry once |
 | V4 | 1–6 holdings | retry once |
 | V5 | Each fund at most once | retry once |
+| V6 | After the user chose to keep their profile, no new profile change | a change attached to a plan is dropped; a change without a plan is retried once |
 | — | Still failing after retry | **Decline turn**: "I couldn't produce a plan I can check. Try again or change your question." |
 
 ## 5. Checker rules (suitability) — deterministic code
@@ -122,7 +123,7 @@ v0.2 flagged every fund that added *anything* to a failed portfolio rule (e.g. a
 
 | Status | Condition | Shown |
 |---|---|---|
-| followed | actual share ≥ requested minimum | "The plan gives you what you asked for." |
+| followed | actual share ≥ requested minimum | "The plan gives you what you asked for." (success); if the share is above the profile's sector/market limit, a warning instead: "…but N% is above the X% your profile allows" |
 | reduced_explained | actual < requested and `adjustment_note` is not empty | the note, labelled "(not checked)" |
 | reduced_unexplained | actual < requested and no note | warning: "…the model did not say why." |
 
@@ -203,6 +204,8 @@ Scenarios for storyboards:
 
 ## Changelog
 
+- v0.4.5 (2026-11-18): R6 no longer shows a green "gives you what you asked for" when the requested share breaks a profile limit (a live run gave 60% technology to a low-risk profile, shown green above a Look again badge); it now warns that following the request is not the same as suiting the profile.
+- v0.4.4 (2026-11-18): "Keep my current profile" now asks for a plan straight away, telling the model the user kept the profile; V6 enforces it in code. Before, the user returned to the question box and the same question gave the same proposal again (a loop). Found with `gpt-oss-20b`, which ignored the v3 prompt rule that a theme is not a profile change.
 - v0.4.3 (2026-11-18): the model picker lists only models verified end to end (`data/working_models.json`, each with when and how it was verified) that the provider still serves; `scripts/check_models.py` re-verifies by sending one fixed request per model through the full pipeline. Replaces the "(tested)" label and untested-model warning.
 - v0.4.2 (2026-11-18): a small model (allam-2-7b) could not follow the JSON format and Groq rejected its output (`json_validate_failed`); that rejection is now treated like V1 (one retry with the error), errors shown to the user are shortened, and the model picker marks tested models and warns that others may fail.
 - v0.4.1 (2026-11-18): model picker. After choosing a provider, the user picks a model from the provider's live list (Groq `models.list`, Gemini `models.list` filtered to `generateContent`); speech, safety-classifier, embedding and image models are filtered out; falls back to the `.env` model if the list cannot be loaded; changing model starts a new session so logs do not mix models.

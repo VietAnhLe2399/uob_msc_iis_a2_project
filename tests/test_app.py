@@ -117,3 +117,17 @@ def test_model_picker_lists_only_verified_models_still_served(monkeypatch):
     picker = [s for s in at.selectbox if s.label == "Model"][0]
     assert picker.options == ["openai/gpt-oss-120b", "qwen/qwen3.8-27b"]  # allam: unverified; gpt-oss-20b: retired
     assert picker.value == "qwen/qwen3.8-27b"
+
+
+def test_keep_current_profile_gives_a_plan_not_a_loop():
+    at = start("scenario_3")  # first model output proposes a profile change
+    button(at, "Keep my current profile").click().run()
+    assert not at.exception
+    assert "10-year" in [m.value for m in at.markdown if m.value.startswith("**Profile:**")][0]
+    assert cards(at), "a plan for the unchanged profile is shown"
+
+
+def test_request_followed_but_over_profile_limit_is_not_shown_as_good():
+    at = start("live_groq_v4_ai")  # 55% technology requested and given; medium profile allows 30% in one sector
+    assert not at.success
+    assert any("gives you what you asked for, but 55%" in w.value and "30%" in w.value for w in at.warning)
