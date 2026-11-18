@@ -8,6 +8,16 @@ from app.models import Plan, Profile
 from app.prompt import DEFAULT_PROMPT_VERSION, build_user_message, get_instruction
 from app.validator import validate
 
+def _is_provider_json_error(exc: Exception) -> bool:
+    text = str(exc)
+    return "json_validate_failed" in text or "Failed to generate JSON" in text
+
+
+def _short(exc: Exception, limit: int = 300) -> str:
+    text = " ".join(str(exc).split())
+    return text if len(text) <= limit else text[:limit] + " …"
+
+
 DECLINE_TEXT = "I couldn't produce a plan I can check. Try again or change your question."
 
 
@@ -31,8 +41,14 @@ def run(profile: Profile, question: str, client, funds: dict, failed_rules=None,
         user = build_user_message(profile, question, funds, failed_rules, validator_errors)
         try:
             raw = client.generate(instruction, user)
-        except Exception as exc:  # network, quota, missing key
-            result.errors.append(f"model call failed: {exc.__class__.__name__}: {exc}")
+        except Exception as exc:  # network, quota, missing key, or the provider rejecting malformed JSON
+            if _is_provider_json_error(exc):
+                # The provider's JSON mode refused the output: same meaning as V1, so retry once like V1.
+                validator_errors = ["V1 the provider rejected your output as invalid JSON. "
+                                    "Return only the JSON object, with exactly the fields in the shape given."]
+                result.errors.append("V1 provider rejected the model's output as invalid JSON (json_validate_failed)")
+                continue
+            result.errors.append(f"model call failed: {exc.__class__.__name__}: {_short(exc)}")
             break
         result.raw_outputs.append(raw)
         plan, validator_errors = validate(raw, funds)

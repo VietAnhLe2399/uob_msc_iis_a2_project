@@ -41,8 +41,8 @@ FIELDS = ["ts", "provider", "model", "prompt_version", "profile", "question", "r
           "any_flag", "suitability_flag", "description_flag", "request_status", "error"]
 
 
-def one_run(provider, prompt_version, name, profile, i, funds, qkey="plain"):
-    client = make_client(provider)
+def one_run(provider, prompt_version, name, profile, i, funds, qkey="plain", model=None):
+    client = make_client(provider, model=model)
     res = run(profile, QUESTIONS[qkey], client, funds, prompt_version=prompt_version)
     rep = res.report
     failed = [r for r in rep.failed_rules] if rep else []
@@ -98,6 +98,7 @@ def main():
     ap.add_argument("--runs", type=int, default=3)
     ap.add_argument("--prompts", nargs="+", default=["v1", "v4"])
     ap.add_argument("--questions", nargs="+", default=["plain", "theme"], choices=list(QUESTIONS))
+    ap.add_argument("--model", help="model id (default: GROQ_MODEL / GEMINI_MODEL from .env)")
     ap.add_argument("--sleep", type=float, default=2.0, help="seconds between calls (rate limits)")
     ap.add_argument("--summarise", help="summarise an existing CSV and exit")
     args = ap.parse_args()
@@ -118,7 +119,7 @@ def main():
                 for q in args.questions:
                     for i in range(1, args.runs + 1):
                         k += 1
-                        row = one_run(args.provider, v, name, profile, i, funds, q)
+                        row = one_run(args.provider, v, name, profile, i, funds, q, args.model)
                         w.writerow(row)
                         f.flush()
                         print(f"[{k}/{total}] {v} {q} {name} #{i}: {row['status']} "

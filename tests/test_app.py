@@ -86,3 +86,34 @@ def test_request_panel_reduced_without_explanation():
     assert any("allows up to 30%" in c.value for c in at.caption)
     button(at, "Suggest again").click().run()
     assert any("Model's explanation (not checked)" in i.value for i in at.info)
+
+
+def test_model_list_failure_falls_back_to_env(monkeypatch):
+    import streamlit as st
+    import app.llm_client
+
+    def no_network(provider):
+        raise ConnectionError("offline")
+    monkeypatch.setattr(app.llm_client, "list_models", no_network)  # never call a real API in tests
+    monkeypatch.setenv("GROQ_MODEL", "some-model")
+    st.cache_data.clear()
+    at = st_testing.AppTest.from_file(APP, default_timeout=60).run()
+    [s for s in at.selectbox if s.label == "Model provider"][0].set_value("groq").run()
+    assert not at.exception
+    picker = [s for s in at.selectbox if s.label == "Model"][0]  # live list unknown -> verified list
+    assert "openai/gpt-oss-120b" in picker.options and "allam-2-7b" not in picker.options
+
+
+def test_model_picker_lists_only_verified_models_still_served(monkeypatch):
+    import streamlit as st
+    import app.llm_client
+    # live list: two verified models, one unverified, one speech model; one verified model has been retired
+    monkeypatch.setattr(app.llm_client, "list_models",
+                        lambda p: ["openai/gpt-oss-120b", "qwen/qwen3.8-27b", "allam-2-7b"])
+    monkeypatch.setenv("GROQ_MODEL", "qwen/qwen3.8-27b")
+    st.cache_data.clear()
+    at = st_testing.AppTest.from_file(APP, default_timeout=60).run()
+    [s for s in at.selectbox if s.label == "Model provider"][0].set_value("groq").run()
+    picker = [s for s in at.selectbox if s.label == "Model"][0]
+    assert picker.options == ["openai/gpt-oss-120b", "qwen/qwen3.8-27b"]  # allam: unverified; gpt-oss-20b: retired
+    assert picker.value == "qwen/qwen3.8-27b"

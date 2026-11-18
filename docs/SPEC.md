@@ -203,6 +203,9 @@ Scenarios for storyboards:
 
 ## Changelog
 
+- v0.4.3 (2026-11-18): the model picker lists only models verified end to end (`data/working_models.json`, each with when and how it was verified) that the provider still serves; `scripts/check_models.py` re-verifies by sending one fixed request per model through the full pipeline. Replaces the "(tested)" label and untested-model warning.
+- v0.4.2 (2026-11-18): a small model (allam-2-7b) could not follow the JSON format and Groq rejected its output (`json_validate_failed`); that rejection is now treated like V1 (one retry with the error), errors shown to the user are shortened, and the model picker marks tested models and warns that others may fail.
+- v0.4.1 (2026-11-18): model picker. After choosing a provider, the user picks a model from the provider's live list (Groq `models.list`, Gemini `models.list` filtered to `generateContent`); speech, safety-classifier, embedding and image models are filtered out; falls back to the `.env` model if the list cannot be loaded; changing model starts a new session so logs do not mix models.
 - v0.4 (2026-11-17): R6 compares an explicit user request with the plan. The model states the request it read (`requested_focus`: target, minimum %, the user's words) and any reduction (`adjustment_note`); code computes the plan's actual share and shows both, plus the profile limit if the request exceeds it. Flags a reduction the model did not explain. Prompt v4; replay scenario_4 (scripted). Trigger: a live run answered "most of my money into AI" with 20% tech and a confident summary.
 - v0.3.3 (2026-11-17): prompt v3 states what counts as a profile change (a live run turned "I'm excited about AI" into a risk-level change and returned no plan). Batch evaluation adds a theme-driven question and compares v1 with v3.
 - v0.3.2 (2026-11-17): Ollama (local models) removed: replay already gives reviewers a no-key option, and an untested provider adds nothing to the evaluation.

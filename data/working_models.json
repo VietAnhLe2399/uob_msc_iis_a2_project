@@ -1,0 +1,11 @@
+{
+  "_about": "Models that produced a valid, checkable plan through this app's full pipeline. The app lists only these (if the provider still serves them). Update with scripts/check_models.py or by hand after a manual check.",
+  "groq": {
+    "openai/gpt-oss-120b": "2026-11-17: live runs and batch evaluation (40 runs)",
+    "openai/gpt-oss-20b": "2026-11-18: manual check in the app (Arthur)",
+    "qwen/qwen3.8-27b": "2026-11-18: manual check in the app (Arthur)"
+  },
+  "gemini": {
+    "gemini-3.8-flash": "2026-11-17: live runs in the app"
+  }
+}

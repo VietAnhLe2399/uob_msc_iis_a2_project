@@ -269,3 +269,67 @@ def test_live_groq_v4_ai_replay_all_three_badges_and_request_followed():
     r = check_plan(prof, p, FUNDS)
     assert set(levels(r).values()) == {"look_again", "review", "checked"}
     assert check_request(prof, p, FUNDS).status == "followed"
+
+
+# ---------- Model list filtering (live lists come from the providers' APIs) ----------
+
+def test_filter_groq_models_keeps_active_chat_models():
+    from app.llm_client import filter_groq_models
+    raw = [{"id": "openai/gpt-oss-120b", "active": True}, {"id": "llama-3.1-8b-instant", "active": True},
+           {"id": "whisper-large-v3", "active": True}, {"id": "playai-tts", "active": True},
+           {"id": "meta-llama/llama-guard-4-12b", "active": True}, {"id": "old-model", "active": False}]
+    assert filter_groq_models(raw) == ["llama-3.1-8b-instant", "openai/gpt-oss-120b"]
+
+
+def test_filter_gemini_models_keeps_generate_content():
+    from app.llm_client import filter_gemini_models
+    raw = [{"name": "models/gemini-3.8-flash", "supported_actions": ["generateContent", "countTokens"]},
+           {"name": "models/gemini-2.5-pro", "supported_actions": ["generateContent"]},
+           {"name": "models/text-embedding-004", "supported_actions": ["embedContent"]},
+           {"name": "models/gemini-embedding-001", "supported_actions": ["embedContent", "generateContent"]},
+           {"name": "models/gemini-2.5-flash-image", "supported_actions": ["generateContent"]},
+           {"name": "models/gemini-2.0-flash-live", "supported_actions": ["bidiGenerateContent"]}]
+    assert filter_gemini_models(raw) == ["gemini-3.8-flash", "gemini-2.5-pro"]
+
+
+# ---------- Provider-side JSON rejection is retried like V1, and errors stay short ----------
+
+class _RejectThenAnswer:
+    """Fake client: first call fails like Groq's json_validate_failed, second returns a valid plan."""
+    def __init__(self, second):
+        self.calls, self.second = 0, second
+
+    def generate(self, system, user):
+        self.calls += 1
+        if self.calls == 1:
+            raise RuntimeError("Error code: 400 - {'error': {'message': 'Failed to generate JSON.', "
+                               "'code': 'json_validate_failed', 'failed_generation': '" + "x" * 5000 + "'}}")
+        return self.second
+
+
+def test_provider_json_rejection_is_retried_once():
+    from app.pipeline import run
+    good = json.dumps({"holdings": [{"fund_id": "F02", "weight_pct": 100}]})
+    client = _RejectThenAnswer(good)
+    res = run(MED_12Y, "", client, FUNDS)
+    assert client.calls == 2 and res.status == "ok"
+    assert "Return only the JSON object" not in res.errors[0] and res.errors[0].startswith("V1 provider")
+
+
+def test_provider_json_rejection_twice_declines_with_short_errors():
+    from app.pipeline import run
+
+    class AlwaysReject(_RejectThenAnswer):
+        def generate(self, system, user):
+            self.calls += 1
+            raise RuntimeError("Error code: 400 - json_validate_failed " + "y" * 5000)
+    res = run(MED_12Y, "", AlwaysReject(None), FUNDS)
+    assert res.status == "system_declined" and all(len(e) < 500 for e in res.errors)
+
+
+def test_selectable_models_are_verified_and_still_served():
+    from app.llm_client import load_working_models, selectable_models
+    working = {"groq": {"a": "note", "b": "note"}}
+    assert selectable_models("groq", ["b", "c"], working) == ["b"]
+    assert selectable_models("groq", None, working) == ["a", "b"]
+    assert "openai/gpt-oss-120b" in load_working_models()["groq"]

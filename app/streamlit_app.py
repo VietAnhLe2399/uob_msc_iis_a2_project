@@ -13,7 +13,7 @@ from dotenv import load_dotenv  # noqa: E402
 from app.checker import check_plan, with_removed  # noqa: E402
 from app.funds import load_funds  # noqa: E402
 from app.hedge import hedge_text, not_checked_text  # noqa: E402
-from app.llm_client import make_client  # noqa: E402
+from app.llm_client import default_model, list_models, make_client, selectable_models  # noqa: E402
 from app.logger import SessionLog  # noqa: E402
 from app.models import GOAL_LABELS, Profile, apply_profile_change  # noqa: E402
 from app.pipeline import DECLINE_TEXT, Result, run  # noqa: E402
@@ -31,7 +31,7 @@ ss = st.session_state
 
 # ---------------- state ----------------
 def reset():
-    keep = {k: ss.get(k) for k in ("provider", "scenario", "mode")}
+    keep = {k: ss.get(k) for k in ("provider", "scenario", "mode", "model")}
     ss.clear()
     ss.update(keep)
     ss.stage = "form"
@@ -52,8 +52,17 @@ def checks_on() -> bool:
 
 def client():
     if "client" not in ss:
-        ss.client = make_client(ss.provider, ss.scenario)
+        ss.client = make_client(ss.provider, ss.scenario, ss.get("model") or None)
     return ss.client
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def available_models(provider: str):
+    """Live model list from the provider (cached for an hour). Returns (models, error)."""
+    try:
+        return list_models(provider), None
+    except Exception as exc:  # no key, no package, no network
+        return [], f"{exc.__class__.__name__}: {exc}"
 
 
 def scenario_defaults():
@@ -97,9 +106,29 @@ with st.sidebar:
     chosen = st.selectbox("Model provider", providers, index=providers.index(ss.provider),
                           help="replay uses stored model outputs: no API key needed.")
     if chosen != ss.provider:
-        ss.provider = chosen
+        ss.provider, ss.model = chosen, None
         reset()
         st.rerun()
+    if ss.provider != "replay":
+        live, err = available_models(ss.provider)
+        models = selectable_models(ss.provider, live if live else None)  # live list unknown -> verified list
+        fallback = default_model(ss.provider)
+        if not models:
+            ss.model = fallback or None
+            st.caption(f"No verified {ss.provider} model is available right now. "
+                       f"Using `{fallback or 'the default'}` from .env.")
+        else:
+            current = ss.get("model") if ss.get("model") in models else (fallback if fallback in models else models[0])
+            picked = st.selectbox("Model", models, index=models.index(current),
+                                  help="Models that produced a valid plan in this app "
+                                       "(data/working_models.json) and that the provider still serves.")
+            if picked != ss.get("model"):
+                first_pick = ss.get("model") is None
+                ss.model = picked
+                if not first_pick:  # a different model starts a new session, so logs don't mix models
+                    reset()
+                    st.rerun()
+                ss.pop("client", None)
     if ss.provider == "replay":
         sc = st.selectbox("Replay scenario", list(SCENARIOS), index=list(SCENARIOS).index(ss.scenario),
                           format_func=lambda k: f"{k}: {SCENARIOS[k]['title']}")
@@ -311,7 +340,7 @@ if ss.stage == "result":
         st.error(DECLINE_TEXT)
         with st.expander("What went wrong"):
             for e in res.errors:
-                st.write(e)
+                st.write(e if len(e) <= 400 else e[:400] + " …")
         if st.button("Try again"):
             ss.stage = "ask"
             st.rerun()
