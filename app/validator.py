@@ -27,6 +27,11 @@ def validate(raw: str, funds: dict) -> Tuple[Optional[Plan], List[str]]:
     total = sum(h.weight_pct for h in plan.holdings)
     if abs(total - 100) > 1:
         errors.append(f"V3 weights sum to {total}, must be 100.")
+    # V5: each fund at most once
+    ids = [h.fund_id for h in plan.holdings]
+    dups = sorted({i for i in ids if ids.count(i) > 1})
+    if dups:
+        errors.append(f"V5 fund(s) listed more than once: {', '.join(dups)}. Combine them into one holding.")
     # V4: 1-6 holdings
     if len(plan.holdings) > 6:
         errors.append(f"V4 {len(plan.holdings)} holdings, maximum is 6.")

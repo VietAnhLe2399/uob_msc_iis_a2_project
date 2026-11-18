@@ -6,9 +6,12 @@ from typing import Dict
 ROOT = Path(__file__).resolve().parent.parent
 FUNDS_CSV = ROOT / "data" / "funds.csv"
 
-NUMERIC = {"equity_pct": float, "us_pct": float, "risk_level": int, "ongoing_charge_pct": float}
-PROMPT_FIELDS = ["fund_id", "name", "asset_class", "region", "sector",
-                 "equity_pct", "us_pct", "risk_level", "ongoing_charge_pct"]
+COUNTRIES = {"eq_us": "US", "eq_uk": "UK", "eq_europe": "Europe", "eq_em": "Emerging markets"}
+NUMERIC = {"equity_pct": float, "eq_us": float, "eq_uk": float, "eq_europe": float, "eq_em": float,
+           "eq_other": float, "risk_level": int, "ongoing_charge_pct": float}
+# eq_* = where the fund's EQUITY part is invested (% of the equity part); eq_other = many smaller markets.
+PROMPT_FIELDS = ["fund_id", "name", "asset_class", "region", "sector", "equity_pct",
+                 "eq_us", "eq_uk", "eq_europe", "eq_em", "eq_other", "risk_level", "ongoing_charge_pct"]
 
 
 def load_funds(path: Path = FUNDS_CSV) -> Dict[str, dict]:

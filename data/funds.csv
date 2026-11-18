@@ -1,17 +1,17 @@
-fund_id,name,asset_class,region,sector,equity_pct,us_pct,risk_level,ongoing_charge_pct,source,as_of
-F01,UK All-Share Equity Index,equity,UK,diversified,100,0,5,0.10,fictional (modelled on common UK index fund types),2026-11-16
-F02,Global Equity Tracker,equity,Global,diversified,100,60,5,0.15,fictional (modelled on common UK index fund types),2026-11-16
-F03,US Large Cap 500 Index,equity,US,diversified,100,100,5,0.07,fictional (modelled on common UK index fund types),2026-11-16
-F04,Europe ex-UK Equity Index,equity,Europe,diversified,100,0,5,0.12,fictional (modelled on common UK index fund types),2026-11-16
-F05,Emerging Markets Equity Index,equity,Emerging,diversified,100,0,6,0.25,fictional (modelled on common UK index fund types),2026-11-16
-F06,Global Small Cap Equity,equity,Global,diversified,100,55,6,0.35,fictional (modelled on common UK index fund types),2026-11-16
-F07,US Tech Equity,equity,US,technology,100,100,6,0.30,fictional (modelled on common UK index fund types),2026-11-16
-F08,Global Healthcare Equity,equity,Global,healthcare,100,65,5,0.40,fictional (modelled on common UK index fund types),2026-11-16
-F09,Global Clean Energy Equity,equity,Global,energy,100,40,7,0.55,fictional (modelled on common UK index fund types),2026-11-16
-F10,Multi-Asset 60/40 Balanced,mixed,Global,diversified,60,40,4,0.22,fictional (modelled on common UK index fund types),2026-11-16
-F11,Multi-Asset 20/80 Cautious,mixed,Global,diversified,20,25,3,0.22,fictional (modelled on common UK index fund types),2026-11-16
-F12,Global Aggregate Bond (GBP hedged),bond,Global,diversified,0,40,3,0.10,fictional (modelled on common UK index fund types),2026-11-16
-F13,UK Corporate Bond Index,bond,UK,diversified,0,0,3,0.09,fictional (modelled on common UK index fund types),2026-11-16
-F14,Short-Dated UK Gilts,bond,UK,government,0,0,1,0.07,fictional (modelled on common UK index fund types),2026-11-16
-F15,UK Gilts,bond,UK,government,0,0,2,0.07,fictional (modelled on common UK index fund types),2026-11-16
-F16,Sterling Money Market,cash,UK,cash,0,0,1,0.10,fictional (modelled on common UK index fund types),2026-11-16
+fund_id,name,asset_class,region,sector,equity_pct,eq_us,eq_uk,eq_europe,eq_em,eq_other,risk_level,ongoing_charge_pct,source,as_of
+F01,UK All-Share Equity Index,equity,UK,diversified,100,0,100,0,0,0,5,0.10,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F02,Global Equity Tracker,equity,Global,diversified,100,60,4,12,10,14,5,0.15,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F03,US Large Cap 500 Index,equity,US,diversified,100,100,0,0,0,0,5,0.07,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F04,Europe ex-UK Equity Index,equity,Europe,diversified,100,0,0,100,0,0,5,0.12,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F05,Emerging Markets Equity Index,equity,Emerging,diversified,100,0,0,0,100,0,6,0.25,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F06,Global Small Cap Equity,equity,Global,diversified,100,55,5,15,10,15,6,0.35,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F07,US Tech Equity,equity,US,technology,100,100,0,0,0,0,6,0.30,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F08,Global Healthcare Equity,equity,Global,healthcare,100,65,5,20,0,10,5,0.40,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F09,Global Clean Energy Equity,equity,Global,energy,100,40,0,30,15,15,7,0.55,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F10,Multi-Asset 60/40 Balanced,mixed,Global,diversified,60,60,10,12,8,10,4,0.22,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F11,Multi-Asset 20/80 Cautious,mixed,Global,diversified,20,55,15,12,8,10,3,0.22,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F12,Global Aggregate Bond (GBP hedged),bond,Global,diversified,0,0,0,0,0,0,3,0.10,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F13,UK Corporate Bond Index,bond,UK,diversified,0,0,0,0,0,0,3,0.09,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F14,Short-Dated UK Gilts,bond,UK,government,0,0,0,0,0,0,1,0.07,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F15,UK Gilts,bond,UK,government,0,0,0,0,0,0,2,0.07,fictional (controlled test data modelled on common UK index fund types),2026-11-17
+F16,Sterling Money Market,cash,UK,cash,0,0,0,0,0,0,1,0.10,fictional (controlled test data modelled on common UK index fund types),2026-11-17
