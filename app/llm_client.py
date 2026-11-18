@@ -1,4 +1,4 @@
-"""Thin LLM client. Provider chosen by LLM_PROVIDER: replay | gemini | groq | ollama.
+"""Thin LLM client. Provider chosen by LLM_PROVIDER: replay | gemini | groq.
 
 Every client exposes generate(system, user) -> raw text. Validation happens
 elsewhere (validator.py): the model cannot enforce its own contract (L12).
@@ -23,7 +23,10 @@ class ReplayClient:
         self.index = 0
 
     def generate(self, system: str, user: str) -> str:
-        out = self.calls[min(self.index, len(self.calls) - 1)]
+        if self.index >= len(self.calls):
+            raise RuntimeError("this replay has no further recorded model output "
+                               "(switch to a live provider to ask again)")
+        out = self.calls[self.index]
         self.index += 1
         return json.dumps(out)
 
@@ -34,7 +37,7 @@ class GeminiClient:
     def __init__(self):
         from google import genai
         self.client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-        self.model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+        self.model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 
     def generate(self, system: str, user: str) -> str:
         from google.genai import types
@@ -66,22 +69,6 @@ class GroqClient:
         return resp.choices[0].message.content
 
 
-class OllamaClient:
-    name = "ollama"
-
-    def __init__(self):
-        import ollama
-        self.ollama = ollama
-        self.model = os.getenv("OLLAMA_MODEL", "qwen3:8b")
-
-    def generate(self, system: str, user: str) -> str:
-        resp = self.ollama.chat(model=self.model, format=Plan.model_json_schema(),
-                                options={"temperature": TEMPERATURE},
-                                messages=[{"role": "system", "content": system},
-                                          {"role": "user", "content": user}])
-        return resp.message.content
-
-
 def make_client(provider: str, scenario_id: str = "scenario_2"):
     provider = (provider or "replay").lower()
     if provider == "replay":
@@ -90,6 +77,4 @@ def make_client(provider: str, scenario_id: str = "scenario_2"):
         return GeminiClient()
     if provider == "groq":
         return GroqClient()
-    if provider == "ollama":
-        return OllamaClient()
     raise ValueError(f"Unknown LLM_PROVIDER: {provider}")

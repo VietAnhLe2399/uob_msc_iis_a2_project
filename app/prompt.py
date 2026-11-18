@@ -12,9 +12,11 @@ import json
 from app.funds import funds_as_text
 from app.models import Profile
 
-PROMPT_VERSION = "v1 (2026-11-17)"
+import os
 
-INSTRUCTION = """You suggest simple investment plans for beginner private investors in the UK.
+DEFAULT_PROMPT_VERSION = "v4"
+
+INSTRUCTION_V1 = """You suggest simple investment plans for beginner private investors in the UK.
 
 Task: propose 1 to 6 holdings for the user's confirmed profile, using ONLY funds from the fund list provided.
 
@@ -34,6 +36,48 @@ Return JSON only, matching this shape:
 {"holdings": [{"fund_id": "F02", "weight_pct": 60, "claims": ["diversified"], "reason": "..."}],
  "profile_change_suggested": null,
  "summary": "..."}"""
+
+
+CLAIM_DEFINITIONS = """
+Claim meanings (use a claim only if it is true of the fund itself, using the fund list):
+- low_risk: the fund's risk_level is 3 or below.
+- low_cost: the fund's ongoing_charge_pct is 0.25 or below.
+- diversified: the fund itself holds many sectors across many countries (sector "diversified" and region "Global").
+  Do not use it to mean "adds diversification to the plan".
+- income: the fund holds bonds, cash or a bond/share mix.
+- growth / other: your own view; these cannot be checked."""
+
+# v2 (2026-11-17): adds claim definitions after live runs showed the model using "diversified"
+# to mean "diversifies my plan" while the checker meant "the fund itself is diversified".
+INSTRUCTION_V2 = INSTRUCTION_V1.replace("\n\nReturn JSON only", CLAIM_DEFINITIONS + "\n\nReturn JSON only")
+PROFILE_CHANGE_SCOPE = """
+What counts as a profile change: only a clear statement about when the money is needed, the amount, the goal,
+or how much loss the user can accept (e.g. "I need it next year", "I can't afford to lose any of it").
+An interest in a sector, theme or fund (e.g. "I'm excited about AI") is NOT a profile change: build a plan
+for the confirmed profile and reflect the interest only as far as the profile allows."""
+
+# v3 (2026-11-17): live run showed the model treating "I'm excited about AI and technology" as a request
+# to change the risk level, so it returned no plan (the repair turn fired too eagerly).
+INSTRUCTION_V3 = INSTRUCTION_V2.replace("\n\nReturn JSON only", PROFILE_CHANGE_SCOPE + "\n\nReturn JSON only")
+REQUEST_FIELDS = """
+If the user explicitly asks for a share of the plan in one sector or market (e.g. "most of my money in tech"),
+fill requested_focus: target (one of: technology, healthcare, energy, US, UK, Europe, Emerging markets),
+min_pct (the smallest percentage their words mean; "most" means 50), and quote (their exact words).
+Otherwise set requested_focus to null.
+If your plan gives them less than they asked for, say so and why in adjustment_note (at most 40 words);
+otherwise leave adjustment_note empty."""
+
+# v4 (2026-11-17): a live run answered "most of my money into AI" with 20% tech and a confident summary,
+# without saying it had reduced the request. v4 asks the model to state the request it read and any reduction;
+# the code then compares the request with the plan's actual share.
+INSTRUCTION_V4 = INSTRUCTION_V3.replace("\n\nReturn JSON only", REQUEST_FIELDS + "\n\nReturn JSON only").replace(
+    ' "profile_change_suggested": null,\n "summary": "..."}',
+    ' "profile_change_suggested": null,\n "requested_focus": null,\n "adjustment_note": "",\n "summary": "..."}')
+INSTRUCTIONS = {"v1": INSTRUCTION_V1, "v2": INSTRUCTION_V2, "v3": INSTRUCTION_V3, "v4": INSTRUCTION_V4}
+
+
+def get_instruction(version: str = None) -> str:
+    return INSTRUCTIONS[version or os.getenv("PROMPT_VERSION", DEFAULT_PROMPT_VERSION)]
 
 
 def build_user_message(profile: Profile, question: str, funds: dict,
