@@ -1,0 +1,61 @@
+{
+  "id": "scenario_1",
+  "title": "Suitable plan, one false claim",
+  "profile": {
+    "goal": "retirement",
+    "horizon_years": 12,
+    "risk": "medium",
+    "amount_gbp": 20000
+  },
+  "question": "I want to start investing for retirement. What would you suggest?",
+  "calls": [
+    {
+      "holdings": [
+        {
+          "fund_id": "F02",
+          "weight_pct": 40,
+          "claims": [
+            "diversified"
+          ],
+          "reason": "A broad global core that spreads money across many companies and countries."
+        },
+        {
+          "fund_id": "F01",
+          "weight_pct": 15,
+          "claims": [
+            "low_cost"
+          ],
+          "reason": "Adds UK companies at a very low yearly charge."
+        },
+        {
+          "fund_id": "F10",
+          "weight_pct": 15,
+          "claims": [
+            "diversified"
+          ],
+          "reason": "A ready-made mix of shares and bonds that steadies the plan."
+        },
+        {
+          "fund_id": "F12",
+          "weight_pct": 20,
+          "claims": [
+            "low_risk",
+            "income"
+          ],
+          "reason": "Bonds that usually move less than shares and pay interest."
+        },
+        {
+          "fund_id": "F09",
+          "weight_pct": 10,
+          "claims": [
+            "diversified",
+            "growth"
+          ],
+          "reason": "A diversified way to benefit from long-term growth in clean energy."
+        }
+      ],
+      "profile_change_suggested": null,
+      "summary": "A global core with UK shares, a balanced fund, bonds and a small clean-energy holding."
+    }
+  ]
+}

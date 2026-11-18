@@ -1,0 +1,52 @@
+{
+  "id": "scenario_3",
+  "title": "Misread profile, then repair",
+  "profile": {
+    "goal": "general_growth",
+    "horizon_years": 10,
+    "risk": "medium",
+    "amount_gbp": 8000
+  },
+  "question": "Actually I need this money for my wedding next year. What should I do?",
+  "calls": [
+    {
+      "holdings": [],
+      "profile_change_suggested": {
+        "field": "horizon_years",
+        "value": "1",
+        "quote": "I need this money for my wedding next year"
+      },
+      "summary": "You said you need the money next year, but your profile says 10 years. Please confirm your time horizon first."
+    },
+    {
+      "holdings": [
+        {
+          "fund_id": "F16",
+          "weight_pct": 60,
+          "claims": [
+            "low_risk"
+          ],
+          "reason": "Keeps most of the money stable for next year."
+        },
+        {
+          "fund_id": "F14",
+          "weight_pct": 30,
+          "claims": [
+            "low_risk"
+          ],
+          "reason": "Short-dated government bonds with small price moves."
+        },
+        {
+          "fund_id": "F11",
+          "weight_pct": 10,
+          "claims": [
+            "income"
+          ],
+          "reason": "A cautious mix with a little growth potential."
+        }
+      ],
+      "profile_change_suggested": null,
+      "summary": "Mostly cash and short-dated bonds, because you need the money within a year."
+    }
+  ]
+}

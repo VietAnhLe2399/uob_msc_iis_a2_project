@@ -1,0 +1,82 @@
+{
+  "id": "scenario_2",
+  "title": "Concentrated plan, strong flags",
+  "profile": {
+    "goal": "house_deposit",
+    "horizon_years": 3,
+    "risk": "low",
+    "amount_gbp": 10000
+  },
+  "question": "How should I invest this money?",
+  "calls": [
+    {
+      "holdings": [
+        {
+          "fund_id": "F07",
+          "weight_pct": 50,
+          "claims": [
+            "growth"
+          ],
+          "reason": "Technology companies have driven strong market growth."
+        },
+        {
+          "fund_id": "F02",
+          "weight_pct": 35,
+          "claims": [
+            "diversified"
+          ],
+          "reason": "Spreads the rest across global companies."
+        },
+        {
+          "fund_id": "F15",
+          "weight_pct": 15,
+          "claims": [
+            "low_risk"
+          ],
+          "reason": "Government bonds add stability."
+        }
+      ],
+      "profile_change_suggested": null,
+      "summary": "A growth-focused plan with a global core and some government bonds."
+    },
+    {
+      "holdings": [
+        {
+          "fund_id": "F16",
+          "weight_pct": 35,
+          "claims": [
+            "low_risk"
+          ],
+          "reason": "Cash-like fund for money you need soon."
+        },
+        {
+          "fund_id": "F14",
+          "weight_pct": 30,
+          "claims": [
+            "low_risk",
+            "low_cost"
+          ],
+          "reason": "Short-dated government bonds move little in price."
+        },
+        {
+          "fund_id": "F15",
+          "weight_pct": 20,
+          "claims": [
+            "low_risk"
+          ],
+          "reason": "Government bonds for stability."
+        },
+        {
+          "fund_id": "F02",
+          "weight_pct": 15,
+          "claims": [
+            "diversified"
+          ],
+          "reason": "A small share in global companies."
+        }
+      ],
+      "profile_change_suggested": null,
+      "summary": "A cautious plan, mostly cash and government bonds, with a small share in global companies."
+    }
+  ]
+}
