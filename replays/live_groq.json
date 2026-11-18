@@ -1,0 +1,64 @@
+{
+  "id": "live_groq",
+  "title": "Live Groq run (gpt-oss-120b): false claims, confident summary",
+  "profile": {
+    "goal": "general_growth",
+    "horizon_years": 10,
+    "risk": "medium",
+    "amount_gbp": 100000
+  },
+  "question": "How should I invest my money?",
+  "calls": [
+    {
+      "holdings": [
+        {
+          "fund_id": "F02",
+          "weight_pct": 40,
+          "claims": [
+            "growth",
+            "diversified"
+          ],
+          "reason": "Global equity fund provides broad market exposure and growth potential."
+        },
+        {
+          "fund_id": "F01",
+          "weight_pct": 20,
+          "claims": [
+            "growth",
+            "diversified",
+            "low_cost"
+          ],
+          "reason": "UK All\u2011Share offers low\u2011cost exposure to domestic equities for growth."
+        },
+        {
+          "fund_id": "F12",
+          "weight_pct": 20,
+          "claims": [
+            "low_risk",
+            "diversified",
+            "low_cost"
+          ],
+          "reason": "Global aggregate bond hedged to GBP adds low\u2011risk, low\u2011cost diversification."
+        },
+        {
+          "fund_id": "F10",
+          "weight_pct": 20,
+          "claims": [
+            "diversified",
+            "low_risk"
+          ],
+          "reason": "60/40 multi\u2011asset fund balances equity growth with bond stability."
+        }
+      ],
+      "profile_change_suggested": null,
+      "summary": "A 72% equity, 28% bond mix using diversified, low\u2011cost funds aligns with your medium risk and 10\u2011year growth goal."
+    }
+  ],
+  "recorded_from": {
+    "log": "session_20261117T114402_f7e2ec.jsonl",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "ts": "2026-11-17T11:44:31+00:00",
+    "prompt_version": "v1"
+  }
+}

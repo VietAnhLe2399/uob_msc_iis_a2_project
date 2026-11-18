@@ -1,0 +1,69 @@
+{
+  "id": "live_groq_v4_ai",
+  "title": "Live Groq run (prompt v4): 'most of my money into AI' followed, all badges",
+  "profile": {
+    "goal": "general_growth",
+    "horizon_years": 7,
+    "risk": "medium",
+    "amount_gbp": 20000
+  },
+  "question": "I want to put most of my money into AI and tech companies",
+  "calls": [
+    {
+      "holdings": [
+        {
+          "fund_id": "F07",
+          "weight_pct": 55,
+          "claims": [
+            "growth"
+          ],
+          "reason": "Provides direct exposure to US tech companies, aligning with your desire for AI and tech focus."
+        },
+        {
+          "fund_id": "F02",
+          "weight_pct": 25,
+          "claims": [
+            "low_cost",
+            "diversified"
+          ],
+          "reason": "Broad global equity adds diversification and growth potential."
+        },
+        {
+          "fund_id": "F12",
+          "weight_pct": 10,
+          "claims": [
+            "low_risk",
+            "low_cost",
+            "diversified",
+            "income"
+          ],
+          "reason": "Low\u2011risk bond hedge reduces overall portfolio volatility."
+        },
+        {
+          "fund_id": "F10",
+          "weight_pct": 10,
+          "claims": [
+            "low_cost",
+            "diversified"
+          ],
+          "reason": "Provides additional diversification and modest income."
+        }
+      ],
+      "profile_change_suggested": null,
+      "requested_focus": {
+        "target": "technology",
+        "min_pct": 50,
+        "quote": "most of my money into AI and tech companies"
+      },
+      "adjustment_note": "",
+      "summary": "55% tech fund for AI focus, 25% global equity, 10% global bond, 10% balanced mix; meets 7\u2011year horizon, medium risk, diversified, low\u2011cost."
+    }
+  ],
+  "recorded_from": {
+    "log": "session_20261117T122622_80b7c9.jsonl",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "ts": "2026-11-17T12:26:44+00:00",
+    "prompt_version": "v4"
+  }
+}

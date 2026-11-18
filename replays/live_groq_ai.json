@@ -1,0 +1,55 @@
+{
+  "id": "live_groq_ai",
+  "title": "Live Groq run: 'most of my money into AI', model tempers to 20% tech",
+  "profile": {
+    "goal": "general_growth",
+    "horizon_years": 7,
+    "risk": "medium",
+    "amount_gbp": 20000
+  },
+  "question": "I want to put most of my money into AI and tech companies. What should I buy?",
+  "calls": [
+    {
+      "holdings": [
+        {
+          "fund_id": "F02",
+          "weight_pct": 50,
+          "claims": [
+            "low_cost",
+            "diversified",
+            "growth"
+          ],
+          "reason": "Broad global equity gives growth potential with low fees, matching a medium\u2011risk, 7\u2011year horizon."
+        },
+        {
+          "fund_id": "F07",
+          "weight_pct": 20,
+          "claims": [
+            "growth"
+          ],
+          "reason": "Focused US tech exposure adds AI/tech tilt, aligning with your interest while keeping overall risk balanced."
+        },
+        {
+          "fund_id": "F12",
+          "weight_pct": 30,
+          "claims": [
+            "low_risk",
+            "low_cost",
+            "diversified",
+            "income"
+          ],
+          "reason": "Global bond hedge provides stability and income, reducing portfolio volatility for a medium\u2011risk profile."
+        }
+      ],
+      "profile_change_suggested": null,
+      "summary": "A 50% global equity, 20% US tech, and 30% bond mix offers growth, tech exposure, and stability for a 7\u2011year, medium\u2011risk goal."
+    }
+  ],
+  "recorded_from": {
+    "log": "session_20261117T122146_83e7d7.jsonl",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "ts": "2026-11-17T12:22:05+00:00",
+    "prompt_version": "v3"
+  }
+}

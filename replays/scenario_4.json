@@ -1,0 +1,88 @@
+{
+  "id": "scenario_4",
+  "title": "Request reduced without explanation (scripted)",
+  "profile": {
+    "goal": "general_growth",
+    "horizon_years": 7,
+    "risk": "medium",
+    "amount_gbp": 20000
+  },
+  "question": "I want to put most of my money into AI and tech companies. What should I buy?",
+  "calls": [
+    {
+      "holdings": [
+        {
+          "fund_id": "F02",
+          "weight_pct": 50,
+          "claims": [
+            "diversified",
+            "growth"
+          ],
+          "reason": "Broad global shares for long-term growth."
+        },
+        {
+          "fund_id": "F07",
+          "weight_pct": 20,
+          "claims": [
+            "growth"
+          ],
+          "reason": "Adds the AI and technology exposure you asked for."
+        },
+        {
+          "fund_id": "F12",
+          "weight_pct": 30,
+          "claims": [
+            "low_risk",
+            "income"
+          ],
+          "reason": "Bonds to steady the plan."
+        }
+      ],
+      "profile_change_suggested": null,
+      "requested_focus": {
+        "target": "technology",
+        "min_pct": 50,
+        "quote": "most of my money into AI and tech companies"
+      },
+      "adjustment_note": "",
+      "summary": "A growth plan with technology exposure that suits a 7-year, medium-risk goal."
+    },
+    {
+      "holdings": [
+        {
+          "fund_id": "F02",
+          "weight_pct": 45,
+          "claims": [
+            "diversified"
+          ],
+          "reason": "Broad global shares; this already includes many technology companies."
+        },
+        {
+          "fund_id": "F07",
+          "weight_pct": 15,
+          "claims": [
+            "growth"
+          ],
+          "reason": "A focused technology holding within your profile's limits."
+        },
+        {
+          "fund_id": "F12",
+          "weight_pct": 40,
+          "claims": [
+            "low_risk",
+            "income"
+          ],
+          "reason": "Bonds to bring shares within your profile's limit."
+        }
+      ],
+      "profile_change_suggested": null,
+      "requested_focus": {
+        "target": "technology",
+        "min_pct": 50,
+        "quote": "most of my money into AI and tech companies"
+      },
+      "adjustment_note": "Your profile allows up to 30% in one sector and 60% in shares, so I kept technology at 15% and added bonds.",
+      "summary": "A plan within your medium-risk limits, with some technology exposure."
+    }
+  ]
+}
