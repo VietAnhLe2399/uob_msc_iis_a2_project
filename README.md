@@ -1,6 +1,6 @@
 # Second Look
 
-README prose word count: about 1430 (excluding code blocks and commands)
+README word count: about 1510 (including tables; excluding code blocks and commands)
 
 An investment-suggestion assistant for beginner UK investors. A language model proposes a portfolio from a fixed fund list; **deterministic code** checks every suggestion against the user's confirmed profile; the interface attaches a per-suggestion badge (*Look again* / *Review* / *Checked*) with the evidence beside it. The user decides; nothing is bought or sold. Design question carried from my Assignment 1: if hedges are tied to *detectable* suitability problems instead of the model's own confidence, can users spot unsuitable advice? Full specification and dated changelog: [docs/SPEC.md](docs/SPEC.md).
 
@@ -64,7 +64,7 @@ python scripts/check_models.py --provider groq                         # re-veri
 
 ## Development record
 
-The repository was created on 18 Nov after development on 16–18 Nov. The first three commits are real snapshots of the work as it existed on 16–17 Nov (dates in the commit messages); the next four group the later changes by component. Dated detail is in the [SPEC changelog](docs/SPEC.md#changelog).
+The repository was created on 18 Nov after development on 16–18 Nov. The first three commits are real snapshots of the work as it existed on 16–17 Nov (dates in the commit messages); the next four group the later changes by component; the rest were committed as each change was made, ending with the diagram and screenshots for the report. Dated detail is in the [SPEC changelog](docs/SPEC.md#changelog).
 
 | Commit | Content |
 |---|---|
@@ -75,6 +75,11 @@ The repository was created on 18 Nov after development on 16–18 Nov. The first
 | [80faef5](../../commit/80faef5) | LLM layer and UI after live runs |
 | [d648a5c](../../commit/d648a5c) | Live replays and tests |
 | [2d91e14](../../commit/2d91e14) | Batch evaluation |
+| [003c1e0](../../commit/003c1e0) | Model picker: verified models only |
+| [a0067b1](../../commit/a0067b1) | V6 keep-profile in code; R6 warning |
+| [829ec3c](../../commit/829ec3c) | Recorded live run (`gpt-oss-20b`) |
+| [2ed9e8b](../../commit/2ed9e8b) | System diagram (23 Nov) |
+| [b519a8a](../../commit/b519a8a) | Storyboard screenshots (23 Nov) |
 
 **1. Hedges come from code, not from the model.** A1 ended on the risk that hedges help only if they match real unreliability. Claude proposed computing them from suitability checks, since a model's confidence is a self-report, not a check (Lecture 9); I agreed and set the scope. *Checked:* seeded-error tests, one known fault each. [e03d762](../../commit/e03d762)
 
@@ -82,13 +87,13 @@ The repository was created on 18 Nov after development on 16–18 Nov. The first
 
 **3. Thresholds.** R1 bands moved from 3/7 to 5/10 years after checking UK guidance (MoneyHelper, HSBC); the market cap is anchored on Winder et al. (2025); sector and risk caps are declared assumptions. Claude found the sources; I read and approved them. [094fb48](../../commit/094fb48)
 
-**4. Providers.** Groq's default model returned 404, so I switched to `openai/gpt-oss-120b`; Gemini 2.5 Flash was closed to new users, so model names moved to `.env` and I tested `gemini-3.8-flash`. I removed Ollama because replay already gives a no-key option. Later I added a model picker. A first version listed every chat model the provider served; trying a small one (`allam-2-7b`) showed it could not keep to the JSON format. Provider-side JSON rejections now get the same one retry as V1, and I decided the picker should offer only models verified to work: I checked `gpt-oss-20b` and `qwen3.8-27b` by hand, and `scripts/check_models.py` re-verifies the list. [80faef5](../../commit/80faef5)
+**4. Providers.** Groq's default model returned 404, so I switched to `openai/gpt-oss-120b`; Gemini 2.5 Flash was closed to new users, so model names moved to `.env` and I tested `gemini-3.8-flash`. I removed Ollama because replay already gives a no-key option. Later I added a model picker. A first version listed every chat model the provider served; trying a small one (`allam-2-7b`) showed it could not keep to the JSON format. Provider-side JSON rejections now get the same one retry as V1, and I decided the picker should offer only models verified to work: I checked `gpt-oss-20b` and `qwen3.8-27b` by hand, and `scripts/check_models.py` re-verifies the list. [80faef5](../../commit/80faef5), [003c1e0](../../commit/003c1e0)
 
 **5. Rule review after live runs.** My first live run showed the model's summary claiming the plan "aligns with your medium risk" above three warnings, so summaries are now labelled "(not checked)". I then asked why *Review* badges had disappeared; a cash fund had been marked "not confident this suits you" only because the model called it "diversified". At my request we reviewed every rule: R4 became a *description* finding (Review, own wording), Review now marks only funds that are themselves over a limit, and R3 checks every market (100% UK shares had passed every rule). *Checked:* a test per case. [06ef8a8](../../commit/06ef8a8)
 
-**6. Prompt changes, measured.** v2 defines claim tags; v3 says interest in a theme is not a profile change (an AI question had produced no plan); v4 asks the model to state the user's explicit request. Prompt rules alone were not enough: `gpt-oss-20b` still turned "most of my money in AI" into a risk change, and *Keep my current profile* led back to the same proposal. That button now asks for a plan at once and code (V6) refuses a repeated proposal, so the user's choice wins. Batch evaluation (Groq, 20 runs per version, descriptive only): profile-change turns 6/20 (v1) → 0/20 (v4); false claims 15 in 9 of 14 plans → 4 in 4 of 19. Never zero, so the code check stays. [eval/](eval)
+**6. Prompt changes, measured.** v2 defines claim tags; v3 says interest in a theme is not a profile change (an AI question had produced no plan); v4 asks the model to state the user's explicit request. Prompt rules alone were not enough: `gpt-oss-20b` still turned "most of my money in AI" into a risk change, and *Keep my current profile* led back to the same proposal. That button now asks for a plan at once and code (V6) refuses a repeated proposal, so the user's choice wins. Batch evaluation (Groq, 20 runs per version, descriptive only): profile-change turns 6/20 (v1) → 0/20 (v4); false claims 15 in 9 of 14 plans → 4 in 4 of 19. Never zero, so the code check stays. [eval/](eval), [a0067b1](../../commit/a0067b1)
 
-**7. R6 built, not planned.** A live run answered "most of my money into AI" with 20% technology and no explanation. Claude listed this as planned; I asked why it could not be built. R6 now shows the request the model read and the plan's actual share, and warns when a reduction is unexplained. It is not sent back on *Suggest again*, so it cannot push past the sector limit. [06ef8a8](../../commit/06ef8a8)
+**7. R6 built, not planned.** A live run answered "most of my money into AI" with 20% technology and no explanation. Claude listed this as planned; I asked why it could not be built. R6 now shows the request the model read and the plan's actual share, and warns when a reduction is unexplained. It is not sent back on *Suggest again*, so it cannot push past the sector limit. [06ef8a8](../../commit/06ef8a8), [a0067b1](../../commit/a0067b1), [829ec3c](../../commit/829ec3c)
 
 **8. Scope and robustness.** The disclaimer-only mode, re-check after *Remove* and *Undo* were added after the extension; edge cases found in code review (duplicate funds, odd profile-change values) now have tests. [d648a5c](../../commit/d648a5c)
 
@@ -107,6 +112,8 @@ I used **Claude (Anthropic, Opus 5.5)** throughout, in one long working session.
 - `docs/SPEC.md`: specification, thresholds with sources, changelog.
 - `replays/`: scripted (`scenario_*`) and recorded live (`live_*`) model outputs.
 - `eval/`: batch evaluation results (CSV).
+- `screenshots/`: storyboard frames used in the report (replay mode).
+- `docs/diagrams/`: system diagram (SVG/PNG) and the script that draws it.
 - `scripts/`: `batch_eval.py`, `live_to_replay.py`, `check_models.py`.
 - `data/`: fictional fund list; `working_models.json` (verified models, with when and how).
 - No ZIP is needed; everything is in this repository.
