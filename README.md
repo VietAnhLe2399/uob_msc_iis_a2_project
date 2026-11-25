@@ -81,7 +81,7 @@ The repository was created on 18 Nov after development on 16–18 Nov. The first
 | [2ed9e8b](../../commit/2ed9e8b) | System diagram (23 Nov) |
 | [b519a8a](../../commit/b519a8a) | Storyboard screenshots (23 Nov) |
 
-**1. Hedges come from code, not from the model.** A1 ended on the risk that hedges help only if they match real unreliability. Claude proposed computing them from suitability checks, since a model's confidence is a self-report, not a check (Lecture 9); I agreed and set the scope. *Checked:* seeded-error tests, one known fault each. [e03d762](../../commit/e03d762)
+**1. Hedges come from code, not from the model.** A1 ended on an open question: whether hedges on individual recommendations help investors skip unsuitable advice. Claude proposed computing them from suitability checks, since a model's confidence is a self-report, not a check (Lecture 9); I agreed and set the scope. *Checked:* seeded-error tests, one known fault each. [e03d762](../../commit/e03d762)
 
 **2. Fictional fund data as controlled test data.** I kept it fictional when the deadline was extended: known answers make tests and evaluation meaningful, and real data is not what the project tests. [06ef8a8](../../commit/06ef8a8)
 
